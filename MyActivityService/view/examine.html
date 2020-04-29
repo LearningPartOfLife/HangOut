@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+		<!--<link rel="stylesheet" type="text/css" href="../css/mui.min.css"/>-->
+		<style>
+			body {
+				font-size: 20px;
+			}
+			
+			table {
+			}
+			tr,td{
+				text-align:center; 
+			}		
+			th {
+				font-size: 30px;
+			}
+			
+			a {
+				text-align: center;
+				text-decoration: none;
+			}
+		</style>
+
+	</head>
+
+	<body>
+		<form>
+			<table>
+				<tr>
+					<th colspan="2" align="center">小活动后台审核</th>
+				</tr>
+			</table>
+		</form>
+
+		<hr style="FILTER: progid:DXImageTransform.Microsoft.Shadow(color:#987cb9,direction:145,strength:15)" width="90%" color=#987cb9 SIZE=1>
+		<div class="books">
+			<table border="1" cellspacing="0">
+				<tr>
+					<td>活动ID</td>
+					<td>活动主题</td>
+					<td>活动描述</td>
+					<td>约定时间</td>
+					<td>创建时间</td>
+					<td>约定地点</td>
+					<td>发布地点</td>
+					<td>宣传图片</td>
+
+					<td>发布用户名称</td>
+					<td>联系电话</td>
+					<td>操作</td>
+				</tr>
+				<?php while($row=mysqli_fetch_array($result)) :?>
+				<tr>
+					<td>
+						<?=$row[0] ?>
+					</td>
+					<td>
+						<?=$row[1] ?>
+					</td>
+					<td>
+						<?=$row[2] ?>
+					</td>
+					<td>
+						<?=$row[3] ?>
+					</td>
+					<td>
+						<?=$row[4] ?>
+					</td>
+					<td>
+						<?=$row[5] ?>
+					</td>
+					<td>
+						<?=$row[7] ?>
+					</td>
+					<td>
+						<img src="files/<?=$row[8] ?>" style="width: 200px;" />
+					</td>
+					<td>
+						<?=$row[10] ?>
+					</td>
+					<td>
+						<?=$row[11] ?>
+					</td>
+					<td>
+						<a href="examine_publish.php?unid=<?=$row[0]?>">审核通过</a><br />
+						<a href="examine_fail.php?unid=<?=$row[0]?>">不合格</a>
+					</td>
+				</tr>
+				<?php endwhile;?>
+			</table>
+		</div>
+		<hr style="FILTER: progid:DXImageTransform.Microsoft.Shadow(color:#987cb9,direction:145,strength:15)" width="90%" color=#987cb9 SIZE=1>
+		<script src="../js/hui.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			
+		</script>
+	</body>
+
+</html>
