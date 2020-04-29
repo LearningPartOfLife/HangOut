@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../css/mui.min.css" rel="stylesheet" />
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<a class="mui-icon-checkmarkempty mui-icon mui-icon-right-nav mui-pull-right" onclick="setHeight();"></a>
+			<h1 class="mui-title">设置身高</h1>
+		</header>
+		<div class="mui-content">
+			<ul class="mui-table-view">
+				<div class="mui-input-row">
+					<label>身高</label>
+					<input type="text" class="mui-input-clear" placeholder="cm" id="height">
+				</div>
+			</ul>
+		</div>
+		<script src="../js/mui.min.js"></script>
+		<script src="../js/hui.js"></script>
+		<script type="text/javascript">
+			mui.init();
+			hui.plusReady(function() {
+				document.getElementById('height').value = plus.storage.getItem("HEIGHT");
+			});
+
+			function setHeight() {
+				var connectIp = plus.storage.getItem('connectIp');
+				var username = plus.storage.getItem("username");
+				var height = hui('#height').val();
+				if(height==''){
+					hui.toast("身高不能为空！");
+					return ;
+				}
+				if(isNaN(height)){
+					hui.toast("请输入数字！");
+					return ;
+				}
+				hui.postJSON(
+					connectIp + 'TimeAnalysisService/updateHeight.php', {
+						username: username,
+						height: height
+					},
+					function(data) {
+						if(data['code'] == 200) {
+							plus.storage.setItem('HEIGHT',height);
+							hui.toast("修改成功！");
+						} else {
+							hui.toast("修改失败！");
+						}
+					},
+					function(e){}
+				);
+			}
+		</script>
+	</body>
+
+</html>

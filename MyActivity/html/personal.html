@@ -1,0 +1,178 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../css/mui.min.css" rel="stylesheet" />
+		<link href="../css/hui.css" rel="stylesheet" />
+		<style>
+			.head-img {
+				width: 80px;
+				height: 80px;
+			}
+			
+			.mui-page .mui-table-view:first-child {
+				margin-top: 15px;
+			}
+			
+			.mui-page .mui-table-view:last-child {
+				margin-bottom: 30px;
+			}
+			
+			.mui-table-view {
+				margin-top: 20px;
+			}
+			
+			.mui-page .mui-table-view:first-child {
+				margin-top: 15px;
+			}
+			
+			.mui-page .mui-table-view:last-child {
+				margin-bottom: 30px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<h1 class="mui-title">我的</h1>
+		</header>
+		<div class="mui-content">
+			<ul class="mui-table-view mui-table-view-chevron">
+				<li class="mui-table-view-cell mui-media" onclick="goPersonDetail();">
+					<a class="mui-navigate-right" href="#account">
+						<img class="mui-pull-left head-img" id="head-img" src="">
+						<div class="mui-media-body" style="padding-left: 20px;padding-top:25px ;">
+							<span id="username">请登录</span>
+						</div>
+					</a>
+				</li>
+			</ul>
+			<ul class="mui-table-view mui-table-view-chevron">
+				<li class="mui-table-view-cell" onclick="go_my_message();">
+					<a href="#account" class="mui-navigate-right">消息中心</a>
+					<!--<input id="upload" type="button" value="Create upload task" onclick="createDownload();" ></input>-->
+				</li>
+			</ul>
+			<ul class="mui-table-view mui-table-view-chevron">
+				<li class="mui-table-view-cell" onclick="go_participate_activity();">
+					<a href="#account" class="mui-navigate-right">参与的活动</a>
+					<!--<input id="upload" type="button" value="Create upload task" onclick="createDownload();" ></input>-->
+				</li>
+				<li class="mui-table-view-cell" onclick="go_launch_activity();">
+					<a href="#account" class="mui-navigate-right">发起的活动</a>
+					<!--<input id="upload" type="button" value="Create upload task" onclick="createDownload();" ></input>-->
+				</li>
+			</ul>
+		</div>
+
+		<script src="../js/mui.min.js"></script>
+		<script src="../js/hui.js"></script>
+		<script src="../js/jquery-3.2.1.min.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			mui.init();
+			hui.plusReady(function() {
+				isLogin();
+			});
+
+			function go_my_message() {
+				mui.openWindow({
+					url: 'my_message.html',
+					id: 'my_message.html',
+					show: {
+						//aniShow: "zoom-out", //页面显示动画，默认为”slide-in-right“；
+					},
+					waiting: {
+						autoShow: true, //自动显示等待框，默认为true
+						title: '正在加载...' //等待对话框上显示的提示内容
+					}
+				});
+			}
+
+			function go_participate_activity() {
+				mui.openWindow({
+					url: 'participate_activity.html',
+					id: 'participate_activity.html',
+					show: {
+						//aniShow: "zoom-out", //页面显示动画，默认为”slide-in-right“；
+					},
+					waiting: {
+						autoShow: true, //自动显示等待框，默认为true
+						title: '正在加载...' //等待对话框上显示的提示内容
+					}
+				});
+			}
+
+			function go_launch_activity() {
+				mui.openWindow({
+					url: 'launch_activity.html',
+					id: 'launch_activity.html',
+					show: {
+						//aniShow: "zoom-out", //页面显示动画，默认为”slide-in-right“；
+					},
+					waiting: {
+						autoShow: true, //自动显示等待框，默认为true
+						title: '正在加载...' //等待对话框上显示的提示内容
+					}
+				});
+			}
+
+			function isLogin() {
+				var username = plus.storage.getItem('username');
+				var connectIp = plus.storage.getItem('connectIp');
+				var head_img = document.getElementById('head-img');
+				var user_name = document.getElementById('username');
+				if(username != null) {
+					hui.postJSON(
+						connectIp + 'TimeAnalysisService/getHeadImg.php', {
+							username: username
+						},
+						function(data) {
+							//console.log(JSON.stringify(data));
+							head_img.src = connectIp + 'TimeAnalysisService/files/' + data['HEAD_IMG'];
+							user_name.innerHTML = "用户名ID: " + username;
+						},
+						function(e) {
+							hui.toast("服务器链接失败");
+						}
+					);
+				} else {
+					head_img.src = "../img/logo.png";
+					user_name.innerHTML = "请登录";
+				}
+			}
+
+			function goPersonDetail() {
+				var username = plus.storage.getItem('username');
+				if(username != null) {
+					mui.openWindow({
+						url: 'person_detail.html',
+						id: 'person_detail.html',
+						show: {
+							//aniShow: "zoom-out", //页面显示动画，默认为”slide-in-right“；
+						},
+						waiting: {
+							autoShow: true, //自动显示等待框，默认为true
+							title: '正在加载...' //等待对话框上显示的提示内容
+						}
+					});
+				} else {
+					mui.openWindow({
+						url: 'login.html',
+						id: 'login.html',
+						show: {
+							//aniShow: "zoom-out", //页面显示动画，默认为”slide-in-right“；
+						},
+						waiting: {
+							autoShow: true, //自动显示等待框，默认为true
+							title: '正在加载...' //等待对话框上显示的提示内容
+						}
+					});
+				}
+			}
+		</script>
+	</body>
+
+</html>

@@ -1,0 +1,264 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../css/mui.min.css" rel="stylesheet" />
+	</head>
+	<style>
+		.head-img {
+			width: 80px;
+			height: 80px;
+		}
+		
+		.mui-page .mui-table-view:first-child {
+			margin-top: 15px;
+		}
+		
+		.mui-page .mui-table-view:last-child {
+			margin-bottom: 30px;
+		}
+		
+		.mui-table-view {
+			margin-top: 20px;
+		}
+		
+		.mui-page .mui-table-view:first-child {
+			margin-top: 15px;
+		}
+		
+		.mui-page .mui-table-view:last-child {
+			margin-bottom: 30px;
+		}
+	</style>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">个人中心</h1>
+		</header>
+		<div class="mui-content">
+			<ul class="mui-table-view mui-table-view-chevron">
+				<li class="mui-table-view-cell mui-media">
+					<a class="mui-navigate-right" id="a-head-img">
+						<img class="mui-pull-right head-img" id="head-img" src="">
+						<div class="mui-media-body" style="padding-top:25px ;">
+							头像
+						</div>
+					</a>
+				</li>
+			</ul>
+			<ul class="mui-table-view mui-table-view-chevron">
+				<li class="mui-table-view-cell" onclick="hui.open('person_name.html')">
+					<a href="#account" class="mui-navigate-right">名字</a>
+				</li>
+				<li class="mui-table-view-cell" onclick="hui.open('person_sex.html')">
+					<a href="#account" class="mui-navigate-right">性别</a>
+				</li>
+				<li class="mui-table-view-cell" onclick="hui.open('person_age.html')">
+					<a href="#account" class="mui-navigate-right">年龄</a>
+				</li>
+				<li class="mui-table-view-cell" onclick="hui.open('person_height.html')">
+					<a href="#account" class="mui-navigate-right">身高</a>
+				</li>
+				<li class="mui-table-view-cell" onclick="hui.open('person_email.html')">
+					<a href="#account" class="mui-navigate-right">邮箱</a>
+				</li>
+				<li class="mui-table-view-cell" onclick="hui.open('person_phone.html')">
+					<a href="#account" class="mui-navigate-right">电话</a>
+				</li>
+				<li class="mui-table-view-cell" onclick="hui.open('person_sign.html')">
+					<a href="#account" class="mui-navigate-right">个性签名</a>
+				</li>
+			</ul>
+			<ul class="mui-table-view mui-table-view-chevron">
+				<li class="mui-table-view-cell" onclick="hui.open('person_address.html')">
+					<a href="#account" class="mui-navigate-right">我的地址</a>
+				</li>
+			</ul>
+			<ul class="mui-table-view">
+				<li class="mui-table-view-cell" style="text-align: center;" onclick="loginOff();">
+					<a>退出登录</a>
+				</li>
+			</ul>
+		</div>
+		<script src="../js/mui.min.js"></script>
+		<script src="../js/hui.js"></script>
+		<script type="text/javascript">
+			mui.init({
+				beforeback: function() {
+					var lauchView = plus.webview.getWebviewById("personal.html");
+					lauchView.evalJS("isLogin();");
+					return true;
+				}
+			});
+			hui.plusReady(function() {
+				defaultImg();
+			});
+
+			function loginOff() {
+				plus.storage.removeItem('username');
+				plus.storage.removeItem('phone');
+				plus.storage.removeItem('realname');
+				plus.storage.removeItem('sex');
+				plus.storage.removeItem('age');
+				plus.storage.removeItem('height');
+				plus.storage.removeItem('email');
+				plus.storage.removeItem('person_sign');
+				plus.storage.removeItem('address');
+				var lauchView = plus.webview.getWebviewById("personal.html");
+				lauchView.evalJS("isLogin();");
+				setTimeout(function() {
+					var self = plus.webview.currentWebview();
+					self.close();
+				}, 1000);
+			}
+
+			function defaultImg() {
+				var username = plus.storage.getItem('username');
+				var connectIp = plus.storage.getItem('connectIp');
+				var head_img = document.getElementById('head-img');
+				hui.postJSON(
+					connectIp + 'TimeAnalysisService/getHeadImg.php', {
+						username: username
+					},
+					function(data) {
+						//console.log(JSON.stringify(data));
+						head_img.src = connectIp + 'TimeAnalysisService/files/' + data['HEAD_IMG'];
+					},
+					function(e) {
+						hui.toast("服务器链接失败");
+					}
+				);
+			}
+			//更换头像
+			mui(".mui-table-view-cell").on("tap", "#a-head-img", function(e) {
+				if(mui.os.plus) {
+					var a = [{
+						title: "拍照"
+					}, {
+						title: "从手机相册选择"
+					}];
+					plus.nativeUI.actionSheet({
+						title: "修改头像",
+						cancel: "取消",
+						buttons: a
+					}, function(b) {
+						switch(b.index) {
+							case 0:
+								break;
+							case 1:
+								getImage();
+								break;
+							case 2:
+								galleryImg();
+								break;
+							default:
+								break;
+						}
+					})
+				}
+			});
+
+			function getImage() {
+				var c = plus.camera.getCamera();
+				c.captureImage(function(e) {
+					plus.io.resolveLocalFileSystemURL(e, function(entry) {
+						var s = entry.toLocalURL() + "?version=" + new Date().getTime();
+						document.getElementById("head-img").src = s;
+
+						var connectIp = plus.storage.getItem('connectIp');
+						var username = plus.storage.getItem('username');
+						var pos = e.lastIndexOf("/");
+						var photoname = e.substring(pos + 1);
+						console.log(photoname);
+						hui.postJSON(
+							connectIp + 'TimeAnalysisService/setHeadImg.php', {
+								username: username,
+								photoname: photoname
+							},
+							function(data) {
+								console.log(JSON.stringify(data));
+							},
+							function(e) {
+								mui.toast("链接服务器失败");
+							}
+						);
+						var task = plus.uploader.createUpload(connectIp + "TimeAnalysisService/upload.php", {
+								method: "POST"
+							},
+							function(t, status) {
+								// 上传完成
+								if(status == 200) {
+									console.log("Upload success:" + t.responseText);
+								} else {
+									console.log("Upload failed: " + status);
+								}
+							}
+						);
+						task.addFile(e, {
+							key: photoname
+						});
+						task.start();
+					}, function(e) {
+						console.log("读取拍照文件错误：" + e.message);
+					});
+				}, function(s) {
+					console.log("error" + s);
+				}, {
+					filename: "_doc/camera/"
+				})
+			}
+
+			function galleryImg() {
+				plus.gallery.pick(function(a) {
+					plus.io.resolveLocalFileSystemURL(a, function(entry) {
+						var s = entry.toLocalURL() + "?version=" + new Date().getTime();
+						document.getElementById("head-img").src = s;
+
+						var connectIp = plus.storage.getItem('connectIp');
+						var username = plus.storage.getItem('username');
+						var pos = a.lastIndexOf("/");
+						var photoname = a.substring(pos + 1);
+						console.log(photoname);
+						hui.postJSON(
+							connectIp + 'TimeAnalysisService/setHeadImg.php', {
+								username: username,
+								photoname: photoname
+							},
+							function(data) {
+								console.log(JSON.stringify(data));
+							},
+							function(e) {
+								mui.toast("链接服务器失败");
+							}
+						);
+						var task = plus.uploader.createUpload(connectIp + "TimeAnalysisService/upload.php", {
+								method: "POST"
+							},
+							function(t, status) {
+								// 上传完成
+								if(status == 200) {
+									console.log("Upload success:" + t.responseText);
+								} else {
+									console.log("Upload failed: " + status);
+								}
+							}
+						);
+						task.addFile(a, {
+							key: photoname
+						});
+						task.start();
+					}, function(e) {
+						console.log("读取拍照文件错误：" + e.message);
+					});
+				}, function(a) {}, {
+					filter: "image"
+				})
+			};
+		</script>
+	</body>
+
+</html>

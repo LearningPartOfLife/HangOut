@@ -1,0 +1,181 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../css/mui.min.css" rel="stylesheet" />
+		<link rel="stylesheet" type="text/css" href="../css/hui.css" />
+	</head>
+	<style>
+		.area {
+			margin: 20px auto 0px auto;
+		}
+		
+		.mui-input-group {
+			margin-top: 10px;
+		}
+		
+		.mui-input-group:first-child {
+			margin-top: 20px;
+		}
+		
+		.mui-input-group label {
+			width: 22%;
+		}
+		
+		.mui-input-row label~input,
+		.mui-input-row label~select,
+		.mui-input-row label~textarea {
+			width: 78%;
+		}
+		
+		.mui-checkbox input[type=checkbox],
+		.mui-radio input[type=radio] {
+			top: 6px;
+		}
+		
+		.mui-content-padded {
+			margin-top: 25px;
+		}
+		
+		.mui-btn {
+			padding: 10px;
+		}
+		
+		.link-area {
+			display: block;
+			margin-top: 25px;
+			text-align: center;
+		}
+		
+		.spliter {
+			color: #bbb;
+			padding: 0px 8px;
+		}
+		
+		.oauth-area {
+			position: absolute;
+			bottom: 20px;
+			left: 0px;
+			text-align: center;
+			width: 100%;
+			padding: 0px;
+			margin: 0px;
+		}
+		
+		.oauth-area .oauth-btn {
+			display: inline-block;
+			width: 50px;
+			height: 50px;
+			background-size: 30px 30px;
+			background-position: center center;
+			background-repeat: no-repeat;
+			margin: 0px 20px;
+			/*-webkit-filter: grayscale(100%); */
+			border: solid 1px #ddd;
+			border-radius: 25px;
+		}
+		
+		.oauth-area .oauth-btn:active {
+			border: solid 1px #aaa;
+		}
+		
+		.oauth-area .oauth-btn.disabled {
+			background-color: #ddd;
+		}
+	</style>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">登录</h1>
+		</header>
+		<div class="mui-content">
+			<form id='login-form' class="mui-input-group">
+				<div class="mui-input-row">
+					<label>账号</label>
+					<input id='username' type="text" class="mui-input-clear mui-input" placeholder="请输入账号">
+				</div>
+				<div class="mui-input-row">
+					<label>密码</label>
+					<input id='pwd' type="password" class="mui-input-clear mui-input" placeholder="请输入密码">
+				</div>
+			</form>
+			<div class="mui-content-padded">
+				<button type="button" class="hui-button hui-button-large hui-primary" style="margin-top:15px;" id="login">登录</button>
+				<div class="link-area">
+					<a id='reg' onclick="hui.open('reg.html');">注册账号</a><!-- <span class="spliter">|</span>-->
+					<!--<a id='forgetPassword' onclick="hui.open('forget_password.html');">忘记密码</a>-->
+				</div>
+			</div>
+			<div class="mui-content-padded oauth-area">
+
+			</div>
+		</div>
+		<script src="../js/mui.min.js"></script>
+		<script type="text/javascript" src="../js/hui.js" charset="UTF-8"></script>
+		<script src="../js/hui-form.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../js/app.js"></script>
+		<script type="text/javascript">
+			mui.init();
+			hui.formInit();
+			var connectIp=plus.storage.getItem('connectIp');
+			hui('#login').click(function() {
+				if(hui(this).buttonIsLoading()) {
+					return false;
+				}
+				hui('#login').loadingButton('登陆中...');
+//				if(huiFormCheck('#form1')) {//表单通过验证后
+				if(true) {
+					var username = hui('#username').val();
+					var pwd = hui('#pwd').val();
+					hui.postJSON(
+						connectIp+'TimeAnalysisService/index.php?do=login', {
+							username: username,
+							pwd: pwd
+						},
+						function(data) {
+							//console.log(JSON.stringify(data));
+							hui('#login').resetLoadingButton();
+							if(data['code'] == 405) {	
+								plus.storage.setItem('username',data.data.username+'');
+								plus.storage.setItem('REALNAME',data.data.REALNAME+'');
+								plus.storage.setItem('UNID',data.data.UNID+'');
+								plus.storage.setItem('HEAD_IMG',data.data.HEAD_IMG+'');
+								plus.storage.setItem('SEX',data.data.SEX+'');
+								plus.storage.setItem('AGE',data.data.AGE+'');
+								plus.storage.setItem('HEIGHT',data.data.HEIGHT+'');
+								plus.storage.setItem('EMAIL',data.data.EMAIL+'');
+								plus.storage.setItem('ADDRESS',data.data.ADDRESS+'');
+								plus.storage.setItem('PHONE',data.data.PHONE+'');
+								plus.storage.setItem('PERSON_SIGN',data.data.PERSON_SIGN+'');
+								plus.storage.setItem('CREATE_TIME',data.data.CREATE_TIME+'');
+								console.log(JSON.stringify(data));
+								hui.toast("登录成功！");
+								var lauchView=plus.webview.getWebviewById("personal.html");
+								lauchView.evalJS("isLogin();");
+								setTimeout(function(){
+									var self = plus.webview.currentWebview();
+									self.close();
+								},1500);
+							} else if(data['code'] == 406) {
+								hui.toast("账号或密码错误！");
+							} else if(data['code'] == 401) {
+								hui.toast("账号密码不能为空！");
+							}
+						},
+						function(e) {
+							hui('#login').resetLoadingButton();
+							hui.toast("服务器链接失败");
+						}
+					);
+				}else{
+					hui('#login').resetLoadingButton();
+				}
+			});
+		</script>
+	</body>
+
+</html>

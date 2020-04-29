@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../css/mui.min.css" rel="stylesheet" />
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<a class="mui-icon-checkmarkempty mui-icon mui-icon-right-nav mui-pull-right" onclick="setEmail();"></a>
+			<h1 class="mui-title">设置邮箱</h1>
+		</header>
+		<div class="mui-content">
+			<ul class="mui-table-view">
+				<div class="mui-input-row">
+					<label>邮箱</label>
+					<input type="text" class="mui-input-clear" placeholder="" id="email">
+				</div>
+			</ul>
+		</div>
+		<script src="../js/mui.min.js"></script>
+		<script src="../js/hui.js"></script>
+		<script type="text/javascript">
+			mui.init();
+			hui.plusReady(function() {
+				document.getElementById('email').value = plus.storage.getItem("EMAIL");
+			});
+
+			function setEmail() {
+				var connectIp = plus.storage.getItem('connectIp');
+				var username = plus.storage.getItem("username");
+				var email = hui('#email').val();
+				var myReg=/^[a-zA-Z0-9_-]+@([a-zA-Z0-9]+\.)+(com|cn|net|org)$/;
+				if(email==''){
+					hui.toast("邮箱不能为空！");
+					return ;
+				}
+				if(!myReg.test(email)){
+					hui.toast("不符合邮箱规范！");
+					return ;
+				}
+				hui.postJSON(
+					connectIp + 'TimeAnalysisService/updateEmail.php', {
+						username: username,
+						email: email
+					},
+					function(data) {
+						if(data['code'] == 200) {
+							plus.storage.setItem('EMAIL',email);
+							hui.toast("修改成功！");
+						} else {
+							hui.toast("修改失败！");
+						}
+					},
+					function(e){}
+				);
+			}
+		</script>
+	</body>
+
+</html>

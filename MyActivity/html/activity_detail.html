@@ -1,0 +1,210 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../css/mui.min.css" rel="stylesheet" />
+		<link rel="stylesheet" type="text/css" href="../css/list-to-detail.css" />
+		<link rel="stylesheet" type="text/css" href="../css/iconfont.css" />
+		<style>
+			.actvity-detail {
+				font-size: 18px;
+				padding-left: 10px;
+				padding-right: 10px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<a class="icon-fenxiang iconfont mui-icon-right-nav mui-pull-right" style="margin-top: 10px;" onclick="shareActivity();"></a>
+			<h1 class="mui-title" id="">详情</h1>
+		</header>
+		<div class="mui-content">
+			<!--顶部banner图 开始-->
+			<div id="kr-article-banner" class="kr-article-banner">
+				<div id="kr-article-cover" class="kr-article-cover">
+					<img src="../img/yuantiao.jpg" />
+				</div>
+				<h2 id="title" class="kr-article-title"></h2>
+			</div>
+			<!--顶部banner图 结束-->
+			<!-- 文章作者、发布时间等信息 -->
+			<div class="kr-article-meta">
+				<div id="author" class="kr-article-author"></div>
+				<div class="kr-article-text">发表于</div>
+				<div id="time" class="kr-article-time"></div>
+			</div>
+			<!--文章详细内容-->
+			<div class="mui-card">
+				<div class="mui-card-header">活动时间</div>
+				<div class="mui-card-content">
+					<div class="mui-card-content-inner" id="datatime"></div>
+				</div>
+			</div>
+			<div class="mui-card">
+				<div class="mui-card-header">活动地点<span class="mui-icon mui-icon-map" onclick="navigateWithMap()"></span></div>
+				<div class="mui-card-content">
+					<div class="mui-card-content-inner" id="dataaddress"></div>
+				</div>
+			</div>
+			<div class="mui-card">
+				<div class="mui-card-header">活动介绍</div>
+				<div class="mui-card-content">
+					<div class="mui-card-content-inner">
+						<span id="article"></span><br /><br /><br />
+						<font style="margin-left:140px ;">活动咨询电话:</font>
+						</span><span id="phone"></span>
+					</div>
+				</div>
+			</div>
+
+			<br /><br /><br />
+			<nav class="mui-bar mui-bar-tab" style="height:45px;">
+				<button id="participate" type="button" class="mui-btn-primary" style="width: 100%;height: 100%;padding: 0px;margin: 0px;">参与</button>
+			</nav>
+		</div>
+
+		<script src="../js/hui.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../js/mui.min.js"></script>
+		<script src="../js/gps.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			mui.init();
+			var dst = null;
+			var src = null;
+			var shares = null;
+
+			function shareActivity() {
+				plus.share.sendWithSystem({
+					content: '分享内容',
+					href: 'http://www.dcloud.io/'
+				}, function() {
+					console.log('分享成功');
+				}, function(e) {
+					console.log('分享失败：' + JSON.stringify(e));
+				});
+			}
+			//调用第三方地图实现路线
+			function navigateWithMap() {
+				if(dst == null) {
+					hui.toast('线上约定，不需要导航~');
+					return;
+				}
+				if('Android' === plus.os.name && navigator.userAgent.indexOf('StreamApp') > 0) {
+					plus.nativeUI.toast('当前环境暂不支持地图插件');
+					return;
+				}
+				plus.geolocation.getCurrentPosition(function(position) {
+					var tmp = GPS.gcj_encrypt(parseFloat(position.coords.latitude), parseFloat(position.coords.longitude));
+					//var dstarr = GPS.gcj_decrypt_exact(tmp['lat'], tmp['lon']);
+					src = new plus.maps.Point(tmp['lon'], tmp['lat']);
+					plus.maps.openSysMap(dst, "路线", src);
+					//var routeObj = new plus.maps.Route( src, dst );
+				});
+
+			}
+
+			mui.plusReady(function() {
+				//console.log(GetArgsFromHref(window.location.href, "unid"));
+				loadDetailData();
+			});
+			var unid = GetArgsFromHref(window.location.href, "unid");
+			//console.log(unid);
+			function GetArgsFromHref(sHref, sArgName) {
+				var args = sHref.split("?");
+				var retval = "";
+
+				if(args[0] == sHref) /*参数为空*/ {
+					return retval; /*无需做任何处理*/
+				}
+				var str = args[1];
+				args = str.split("&");
+				for(var i = 0; i < args.length; i++) {
+					str = args[i];
+					var arg = str.split("=");
+					if(arg.length <= 1) continue;
+					if(arg[0] == sArgName) retval = arg[1];
+				}
+				return retval;
+			}
+
+			function loadDetailData() {
+				var connectIp = plus.storage.getItem('connectIp');
+				hui.postJSON(
+					connectIp + 'TimeAnalysisService/activity_detail.php', {
+						unid: unid
+					},
+					function(data) {
+						//数据全部加载完毕执行，但出现后面新加的			
+						console.log(JSON.stringify(data));
+						document.getElementById('title').innerHTML = data.theme;
+						document.getElementById('author').innerHTML = data.username;
+						document.getElementById('time').innerHTML = data.createtime;
+						document.getElementById('article').innerHTML = data.descript;
+						document.getElementById('datatime').innerHTML = data.datatime;
+						document.getElementById('dataaddress').innerHTML = data.dataaddress;
+						document.getElementById('phone').innerHTML = data.phone;
+
+						if(data.datapoint != "") {
+							var datapoint = JSON.parse(data.datapoint);
+							var tmp = GPS.bd_decrypt(parseFloat(JSON.stringify(datapoint['latitude'])), parseFloat(JSON.stringify(datapoint['longitude'])));
+							//var dstarr = GPS.gcj_decrypt_exact(tmp['lat'], tmp['lon']);
+							dst = new plus.maps.Point(tmp['lon'], tmp['lat']);
+							//console.log(JSON.stringify(datapoint['longitude']) + ',' + JSON.stringify(datapoint['latitude']));
+						}
+					},
+					function(e) {
+						hui.toast("服务器链接失败");
+					}
+				);
+
+			}
+			document.getElementById('participate').addEventListener('tap', function() {
+				var username = plus.storage.getItem('username');
+//				var sex = plus.storage.getItem('sex');
+//				var age = plus.storage.getItem('age');
+				var phone = plus.storage.getItem('PHONE');
+				var connectIp = plus.storage.getItem('connectIp');
+				var createtime = new Date().toLocaleString();
+				//console.log(createtime);
+				if(phone==null){
+					return hui.toast('请至少补充一下联系方式后，参与 谢谢~');
+				}
+				hui.postJSON(
+					connectIp + 'TimeAnalysisService/participate.php', {
+						unid: unid,
+						username: username
+					},
+					function(data) {
+						//console.log(JSON.stringify(data));
+						if(data['code'] == 0) {
+							hui.toast("已经为您报名了！");
+						} else {
+							hui.postJSON(
+								connectIp + 'TimeAnalysisService/setMessage.php', {
+									unid: unid,
+									username: username,
+									createtime: createtime
+								},
+								function(data) {
+									console.log(JSON.stringify(data));
+								},
+								function(e) {
+									hui.toast("服务器链接失败");
+								}
+							);
+							hui.toast("谢谢您的参与！");
+						}
+					},
+					function(e) {
+						hui.toast("服务器链接失败");
+					}
+				);
+			});
+		</script>
+	</body>
+
+</html>

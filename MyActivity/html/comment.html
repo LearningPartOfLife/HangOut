@@ -1,0 +1,145 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../css/mui.min.css" rel="stylesheet" />
+		<style>
+			#bottominput {
+				width: 100%;
+				height: 100%;
+			}
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">评论</h1>
+		</header>
+		<div class="mui-content">
+			<div class="mui-scroll">
+				<div class="mui-table-view">
+				</div><br /><br /><br />
+			</div>
+
+		</div>
+		<nav class="mui-bar mui-bar-tab" style="height: 40px;">
+			<div id="bottominput">
+				<input id="content" type="text" class="" placeholder="请输入您的评论~~" style="padding: 5px;margin: 5px;width: 310px;float: left;">
+				<div id="btnSend" class="mui-btn mui-btn-primary" style="float: left;">发送</div>
+			</div>
+		</nav>
+		<script src="../js/mui.min.js"></script>
+		<script src="../js/hui.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			mui.init();
+			mui.plusReady(function() {
+				loadingData();
+			});
+			//获取活动id
+			var unid = GetArgsFromHref(window.location.href, "unid");
+			//console.log(unid);
+
+			function GetArgsFromHref(sHref, sArgName) {
+				var args = sHref.split("?");
+				var retval = "";
+
+				if(args[0] == sHref) /*参数为空*/ {
+					return retval; /*无需做任何处理*/
+				}
+				var str = args[1];
+				args = str.split("&");
+				for(var i = 0; i < args.length; i++) {
+					str = args[i];
+					var arg = str.split("=");
+					if(arg.length <= 1) continue;
+					if(arg[0] == sArgName) retval = arg[1];
+				}
+				return retval;
+			}
+			//var activityView = plus.webview.getWebviewById("activity.html");
+			document.getElementById("btnSend").addEventListener('tap', function() {
+				var username = plus.storage.getItem('username');
+				var connectIp = plus.storage.getItem('connectIp');
+				var content = document.getElementById('content').value;
+				var createtime = new Date().toLocaleString();
+				//console.log(createtime);
+				if(content == "" || content.length < 5) {
+					mui.toast("评论不能为空且长度大于5！");
+					return;
+				}
+				if(username==null){
+					mui.toast("请您先登录！");
+					return;
+				}
+				//console.log(content);
+				hui.postJSON(
+					connectIp + 'TimeAnalysisService/addContent.php', {
+						unid: unid,
+						username: username,
+						content: content,
+						createtime: createtime
+					},
+					function(data) {
+						//console.log(JSON.stringify(data));
+						if(data['code'] == 1) {
+							document.getElementById('content').value = "";
+							loadingData();
+//							plus.storage.setItem('beginItem',beginItem);						
+//							activityView.evalJS("setCommentCount();");
+							mui.toast("评论成功！");
+						} else {
+							mui.toast("评论失败！");
+						}
+					},
+					function(e) {
+						hui.toast("服务器链接失败");
+					}
+				);
+				hui.postJSON(
+					connectIp + 'TimeAnalysisService/setContentCount.php', {
+						unid: unid,
+						count: beginItem+1
+					},
+					function(data) {
+						//console.log(JSON.stringify(data));								
+					},
+					function(e) {
+						hui.toast("服务器链接失败");
+					}
+				);
+			});
+
+			var beginItem = 0;
+
+			function loadingData() {
+				var connectIp = plus.storage.getItem('connectIp');
+				hui.postJSON(
+					connectIp + 'TimeAnalysisService/getContent.php', {
+						unid: unid
+					},
+					function(data) {
+						//console.log(JSON.stringify(data));
+						var table = document.body.querySelector('.mui-table-view');
+						for(; beginItem < data.length; beginItem++) {
+							var div = document.createElement('div');
+							div.className = 'mui-card';
+							div.innerHTML = '<div class="mui-card-content"><div class="mui-card-content-inner">' +
+								'<p>' + data[beginItem][1] + ' 发布于 ' + data[beginItem][3] +
+								'</p><p style="color: #333;">' + data[beginItem][2] + '</p></div></div>';
+							//下拉刷新，新纪录插到最前面；
+							table.insertBefore(div, table.firstChild);
+						}
+					},
+					function(e) {
+						hui.toast("服务器链接失败");
+					}
+				);
+			}
+		</script>
+	</body>
+
+</html>

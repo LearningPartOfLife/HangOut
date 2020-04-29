@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../css/mui.min.css" rel="stylesheet" />
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<a class="mui-icon-checkmarkempty mui-icon mui-icon-right-nav mui-pull-right" onclick="setAddress();"></a>
+			<h1 class="mui-title">设置地址</h1>
+		</header>
+		<div class="mui-content">
+			<ul class="mui-table-view">
+				<div class="mui-input-row">
+					<label>地址</label>
+					<input type="text" class="mui-input-clear" placeholder="" id="address">
+				</div>
+			</ul>
+		</div>
+		<script src="../js/mui.min.js"></script>
+		<script src="../js/hui.js"></script>
+		<script type="text/javascript">
+			mui.init({
+				
+			});
+			hui.plusReady(function() {
+				document.getElementById('address').value = plus.storage.getItem("ADDRESS");
+			});
+
+			function setAddress() {
+				var connectIp = plus.storage.getItem('connectIp');
+				var username = plus.storage.getItem("username");
+				var address = hui('#address').val();
+				if(address==''){
+					hui.toast("地址不能为空！");
+					return ;
+				}
+				hui.postJSON(
+					connectIp + 'TimeAnalysisService/updateAddress.php', {
+						username: username,
+						address: address
+					},
+					function(data) {
+						if(data['code'] == 200) {
+							plus.storage.setItem('ADDRESS',address);
+							hui.toast("修改成功！");
+						} else {
+							hui.toast("修改失败！");
+						}
+					},
+					function(e){}
+				);
+			}
+		</script>
+	</body>
+
+</html>

@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../css/mui.min.css" rel="stylesheet" />
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<a class="mui-icon-checkmarkempty mui-icon mui-icon-right-nav mui-pull-right" onclick="setPersonSign();"></a>
+			<h1 class="mui-title">设置个性签名</h1>
+		</header>
+		<div class="mui-content">
+			<ul class="mui-table-view">
+				<div class="mui-input-row">
+					<label>个性签名</label>
+					<input type="text" class="mui-input-clear" placeholder="" id="person_sign">
+				</div>
+			</ul>
+		</div>
+		<script src="../js/mui.min.js"></script>
+		<script src="../js/hui.js"></script>
+		<script type="text/javascript">
+			mui.init({
+				
+			});
+			hui.plusReady(function() {
+				document.getElementById('person_sign').value = plus.storage.getItem("person_sign");
+			});
+
+			function setPersonSign() {
+				var connectIp = plus.storage.getItem('connectIp');
+				var username = plus.storage.getItem("username");
+				var person_sign = hui('#person_sign').val();
+				if(person_sign==''){
+					hui.toast("个性签名不能为空！");
+					return ;
+				}
+				hui.postJSON(
+					connectIp + 'TimeAnalysisService/updatePersonSign.php', {
+						username: username,
+						person_sign: person_sign
+					},
+					function(data) {
+						if(data['code'] == 200) {
+							plus.storage.setItem('person_sign',person_sign);
+							hui.toast("修改成功！");
+						} else {
+							hui.toast("修改失败！");
+						}
+					},
+					function(e){}
+				);
+			}
+		</script>
+	</body>
+
+</html>

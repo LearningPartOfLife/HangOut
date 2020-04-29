@@ -1,0 +1,143 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../css/mui.min.css" rel="stylesheet" />
+	</head>
+	<style>
+
+	</style>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">我发起的活动</h1>
+		</header>
+		<div class="mui-content">
+			<div class="mui-scroll">
+				<div class="mui-table-view">
+					<!--<li class="mui-table-view-cell">
+						<div class="mui-card-content mui-slider-handle">
+							<div class="mui-card-content-inner">
+								<p>Posted on January 18, 2016</p>
+								<p style="color: #333;">这里显示文章摘要，让读者对文章内容有个粗略的概念...</p>
+							</div>
+						</div>
+						<div class="mui-slider-right mui-disabled">
+							<a class="mui-btn mui-btn-red">删除</a>
+						</div>
+					</li>-->
+					<!--<li class="mui-table-view-cell mui-collapse">
+						<a class="mui-navigate-right" href="#">文字排版</a>
+						<div class="mui-collapse-content">
+							<p>p. 目前最接近原生App效果的框架。</p>
+						</div>
+					</li>-->
+				</div>
+			</div>
+		</div>
+		<script src="../js/mui.min.js"></script>
+		<script src="../js/jquery-3.2.1.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../js/hui.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			mui.init();
+			mui.plusReady(function() {
+				loadingData();
+			});
+
+			var btnArray = ['确认', '取消'];
+			mui('.mui-table-view').on('tap', '.mui-btn', function() {
+				var elem = this;
+				var li = elem.parentNode.parentNode;
+				var connectIp = plus.storage.getItem('connectIp');
+				var unid = $(li).find('.mui-btn').attr('href');
+				mui.confirm('确认结束此活动？', '提示', btnArray, function(e) {
+					if(e.index == 0) {
+						li.parentNode.removeChild(li);
+						hui.postJSON(
+							connectIp + 'TimeAnalysisService/removeActivity.php', {
+								unid: unid
+							},
+							function(data) {
+								console.log(JSON.stringify(data));
+							},
+							function(e) {
+								hui.toast("服务器链接失败");
+							}
+						);
+					} else {
+						setTimeout(function() {
+							$.swipeoutClose(li);
+						}, 0);
+					}
+				});
+			});
+
+			mui('.mui-table-view').on('tap', '.mui-card-link-4', function() {
+				mui.openWindow({
+					url: this.getAttribute('href'),
+					id: 'participatePeople.html',
+					show: {
+						//aniShow: "zoom-out", //页面显示动画，默认为”slide-in-right“；
+					},
+					waiting: {
+						autoShow: true, //自动显示等待框，默认为true
+						title: '正在加载...' //等待对话框上显示的提示内容
+					}
+				});
+			});
+
+			var beginItem = 0;
+			var contactItem = 0;
+
+			function loadingData() {
+				var connectIp = plus.storage.getItem('connectIp');
+				var username = plus.storage.getItem('username');
+				if(username == null) {
+					return hui.toast("请您先登录！");
+				}
+				hui.postJSON(
+					connectIp + 'TimeAnalysisService/getLaunchList.php', {
+						username: username
+					},
+					function(data) {
+						//console.log(JSON.stringify(data));
+						var table = document.body.querySelector('.mui-table-view');
+						var status = "";
+						for(; beginItem < data.length; beginItem++) {
+							var isshow = data[beginItem][4];
+							var statusstyle =$(table).find('.statusstyle');
+							if(isshow == 1) {
+								status = "审核通过";
+							} else if(isshow == 0) {
+								status = "审核中";
+							}else{
+								status = "审核未通过";
+								//statusstyle.css('color','red');
+							}
+							var div = document.createElement('div');
+							div.className = 'mui-card';
+							div.innerHTML = '<li class="mui-table-view-cell"><div class="mui-slider-handle"><div class="mui-card-content-inner">' +
+								'<p>主题：' + data[beginItem][0] + '</p>' +
+								'<p style="color: #333;">约定时间：' + data[beginItem][1] + '</p>' +
+								'<p style="color: #333;">约定地点：' + data[beginItem][2] + '</p>' +
+								'<p style="color: #333;">审核状态：<span class="statusstyle" style="color:green">' + status + '</span></p>' +
+								'<a class="mui-card-link mui-card-link-4" href="participatePeople.html?unid=' + data[beginItem][3] + '">查看参与人员</a></div></div>' +
+								'<div class="mui-slider-right mui-disabled"><a class="mui-btn mui-btn-red" ' +
+								'href="' + data[beginItem][3] + '">结束</a></div></li>';
+							//下拉刷新，新纪录插到最前面；
+							table.insertBefore(div, table.firstChild);
+						}
+					},
+					function(e) {
+						hui.toast("服务器链接失败");
+					}
+				);
+			}
+		</script>
+	</body>
+
+</html>

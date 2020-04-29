@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en" class="feedback">
+
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title>问题反馈</title>
+		<link rel="stylesheet" type="text/css" href="../css/mui.min.css" />
+		<link rel="stylesheet" type="text/css" href="../css/feedback.css" />
+		<link rel="stylesheet" type="text/css" href="../css/mui.picker.min.css" />
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<h1 class="mui-title">发布会</h1>
+		</header>
+		<div class="mui-content">
+			<p>活动主题</p>
+			<div class="mui-input-row">
+				<input id='theme' type="text" class="mui-input-clear contact" placeholder="活动简短介绍..." />
+			</div>
+			<div class="mui-content-padded">
+				<div class="mui-inline">活动描述</div>
+				<a class="mui-pull-right mui-inline" href="#popover">
+					快捷输入
+					<span class="mui-icon mui-icon-arrowdown"></span>
+				</a>
+				<!--快捷输入具体内容，开发者可自己替换常用语-->
+				<div id="popover" class="mui-popover">
+					<div class="mui-popover-arrow"></div>
+					<div class="mui-scroll-wrapper">
+						<div class="mui-scroll">
+							<ul class="mui-table-view">
+								<!--仅流应用环境下显示-->
+								<li class="mui-table-view-cell stream">
+									<a href="#">约么？</a>
+								</li>
+								<li class="mui-table-view-cell">
+									<a href="#">要不，今天去三坊七巷。</a>
+								</li>
+								<li class="mui-table-view-cell">
+									<a href="#">我有一个想法，希望大家能加入！</a>
+								</li>
+								<li class="mui-table-view-cell">
+									<a href="#">来一次说走就走的旅行，如何？</a>
+								</li>
+								<li class="mui-table-view-cell">
+									<a href="#">需要打印么，我有！</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row mui-input-row">
+				<textarea id='descript' class="mui-input-clear question" placeholder="请详细描述你的活动和流程..."></textarea>
+			</div>
+			<p>约定时间</p>
+			<div class="mui-input-row">
+				<input id='datatime' type="button" class="btn" style="width: 100%;height:40px;" />
+			</div>
+			<p>约定位置(地图将获得准确的坐标，最好精准~)</p>
+			<div class="mui-input-row">
+				<input id='dataaddress' type="button" class="btn" style="width: 100%;height:40px;" />
+				<input id='datapoint' type="text" class="mui-input-clear contact" style="display: none;" />
+			</div>
+			<p>活动宣传图片(选填,总大小10M以下)</p>
+			<div id='image-list' class="row image-list"></div>
+			<p>电话</p>
+			<div class="mui-input-row">
+				<input id='phone' type="text" class="mui-input-clear contact" placeholder="(必填,方便我们联系你 )" />
+			</div>
+			<p>发布位置</p>
+			<div class="mui-input-row">
+				<input id='publishaddress' type="text" class="mui-input-clear contact" placeholder="我在" disabled/>
+			</div>
+			<br />
+			<div class="mui-button-row">
+				<button type="button" id="submit" class="mui-btn mui-btn-primary">发布</button>&nbsp;&nbsp;
+				<button type="button" id="reset" class="mui-btn mui-btn-danger">取消</button>
+			</div><br />
+		</div>
+		<script src="../js/mui.min.js"></script>
+		<script src="../js/mui.picker.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src=" ../js/feedback.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../js/hui.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../js/hui-form.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			mui.init();
+			mui('.mui-scroll-wrapper').scroll();
+			hui.plusReady(function() {
+				getGeocode(); //获得当前的位置
+			});
+			document.getElementById("reset").addEventListener('tap', function() {
+				hui.toast('我美么~');
+			});
+
+			document.getElementById("dataaddress").addEventListener('tap', function() {
+				var btnArray = [{
+					title: "线上相约"
+				}, {
+					title: "线下选址"
+				}];
+				plus.nativeUI.actionSheet({
+					title: "约定位置",
+					cancel: "取消",
+					buttons: btnArray
+				}, function(e) {
+					var index = e.index;
+					var text = "";
+					switch(index) {
+						case 0:
+							break;
+						case 1:
+							text += "线上相约";
+							break;
+						case 2:
+							mui.openWindow({
+								url: 'choose_address.html',
+								id: 'choose_address.html'
+							});
+							break;
+					}
+					dataaddress.value = text;
+				});
+			});
+			//位置从新设置
+			function setAddress() {
+				document.getElementById("dataaddress").value = plus.storage.getItem('dataaddress');
+				document.getElementById("datapoint").value = plus.storage.getItem('datapoint');
+				console.log(plus.storage.getItem('datapoint'));
+			}
+			//约定时间控件的添加
+			(function($) {
+				$.init();
+				var result = $('#datatime')[0];
+				var btn = $('#datatime')[0];
+				btn.addEventListener('tap', function() {
+					var _self = this;
+					if(_self.picker) {
+						_self.picker.show(function(rs) {
+							result.value = '' + rs.text;
+							_self.picker.dispose();
+							_self.picker = null;
+						});
+					} else {
+						var optionsJson = this.getAttribute('data-options') || '{}';
+						var options = JSON.parse(optionsJson);
+						var id = this.getAttribute('id');
+						_self.picker = new $.DtPicker(options);
+						_self.picker.show(function(rs) {
+							result.value = ' ' + rs.text;
+							_self.picker.dispose();
+							_self.picker = null;
+						});
+					}
+				}, false);
+			})(mui);
+			// 通过定位模块获取位置信息
+			function getGeocode() {
+				plus.geolocation.getCurrentPosition(function(position) {
+					var str = "";
+					str += "我在：" + position.addresses;
+					//console.log(JSON.stringify(position));
+					document.getElementById("publishaddress").value = str;
+				}, function(e) {
+					outSet("获取定位位置信息失败：" + e.message);
+				}, {
+					geocode: true
+				});
+			}
+		</script>
+	</body>
+
+</html>

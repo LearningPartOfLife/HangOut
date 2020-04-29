@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../css/mui.min.css" rel="stylesheet" />
+		<link rel="stylesheet" type="text/css" href="../css/hui.css" />
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+		    <a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+		    <h1 class="mui-title">注册</h1>
+		</header>
+		<div class="mui-content">
+				<div class="hui-center-title" style="margin-top:35px;">
+					<h1 style="border:0px;">注册成为新用户</h1></div>
+				<div style="margin:28px; margin-bottom:15px;" class="hui-form" id="form1">
+					<div class="hui-form-items">
+						<input type="text" id="username" class="hui-input hui-input-clear" placeholder="用户名" checkType="string" checkData="5,20" checkMsg="用户名应为5-20个字符" />
+					</div>
+					<div class="hui-form-items">
+						<input type="password" class="hui-input hui-pwd-eye" placeholder="登录密码" checkType="string" id="pwd" checkData="6,20" checkMsg="密码应为6-20个字符" />
+					</div>
+					<div class="hui-form-items">
+						<input type="password" class="hui-input hui-pwd-eye" placeholder="确认密码" checkType="sameWithId" checkData="pwd" checkMsg="两次密码不一致" />
+					</div>
+				</div>
+				<div style="padding:28px; padding-top:0px;">
+					<button type="button" class="hui-button hui-button-large hui-primary" style="margin-top:15px;" id="submit">立即注册</button>
+				</div>
+		</div>
+		<script src="../js/mui.min.js"></script>
+		<script type="text/javascript" src="../js/hui.js" charset="UTF-8"></script>
+		<script src="../js/hui-form.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			mui.init();
+			hui.formInit();
+			var connectIp=plus.storage.getItem('connectIp');
+			hui('#submit').click(function() {
+//				if(huiFormCheck('#form1')) {//表单通过验证后
+				if(hui(this).buttonIsLoading()) {
+					return false;
+				}
+				hui('#submit').loadingButton('注册中...');
+				if(huiFormCheck('#form1')) {//表单通过验证后
+					var username = hui('#username').val();
+					var pwd = hui('#pwd').val();
+					hui.postJSON(
+						connectIp+'TimeAnalysisService/index.php?do=register',
+						{
+							username:username,
+							pwd:pwd
+						},
+						function(data){
+							hui('#submit').resetLoadingButton();
+							console.log(JSON.stringify(data));
+							if(data['code']==400){
+								hui.toast("注册成功！");
+								setTimeout(function(){
+									var self = plus.webview.currentWebview();
+									self.close();
+								},1000);
+							}else if(data['code']==401){
+								hui.toast("账号密码不能为空！");
+							}else if(data['code']==402){
+								hui.toast("该用户已经存在！");
+							}else{
+								hui.toast("注册失败！");
+							}
+						},
+						function(e){
+							hui('#submit').resetLoadingButton();
+							hui.toast("服务器链接失败");
+						}
+					);
+				}else{
+					hui('#submit').resetLoadingButton();
+				}
+			});
+		</script>
+	</body>
+
+</html>

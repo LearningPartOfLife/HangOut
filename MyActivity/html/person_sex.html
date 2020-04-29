@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../css/mui.min.css" rel="stylesheet" />
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<a class="mui-icon-checkmarkempty mui-icon mui-icon-right-nav mui-pull-right" onclick="setSex();"></a>
+			<h1 class="mui-title">设置性别</h1>
+		</header>
+		<div class="mui-content">
+			<ul class="mui-table-view">
+				<div class="mui-input-row">
+					<label>性别</label>
+					<input type="text" class="mui-input-clear" placeholder="" id="sex">
+				</div>
+			</ul>
+		</div>
+		<script src="../js/mui.min.js"></script>
+		<script src="../js/hui.js"></script>
+		<script type="text/javascript">
+			mui.init();
+			hui.plusReady(function() {
+				document.getElementById('sex').value = plus.storage.getItem("SEX");
+			});
+
+			function setSex() {
+				var connectIp = plus.storage.getItem('connectIp');
+				var username = plus.storage.getItem("username");
+				var sex = hui('#sex').val().trim();
+				if(sex==''){
+					hui.toast("性别不能为空！");
+					return ;
+				}
+				if(sex!="男"&&sex!="女"){
+					hui.toast("性别只能为男或者女！");
+					return ;
+				}
+				hui.postJSON(
+					connectIp + 'TimeAnalysisService/updateSex.php', {
+						username: username,
+						sex: sex
+					},
+					function(data) {
+						if(data['code'] == 200) {
+							plus.storage.setItem('SEX',sex);
+							hui.toast("修改成功！");
+						} else {
+							hui.toast("修改失败！");
+						}
+					},
+					function(e){}
+				);
+			}
+		</script>
+	</body>
+
+</html>

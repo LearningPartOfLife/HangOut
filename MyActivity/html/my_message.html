@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../css/mui.min.css" rel="stylesheet" />
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+		    <a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+		    <h1 class="mui-title">消息中心</h1>
+		</header>
+		<div class="mui-content">
+		    <div class="mui-scroll">
+				<div class="mui-table-view">
+				</div>
+			</div>
+		</div>
+		<script src="../js/mui.min.js"></script>
+		<script src="../js/hui.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			mui.init();
+			mui.plusReady(function() {
+				loadingData();
+			});
+			
+			var beginItem=0;
+			function loadingData() {
+				var connectIp = plus.storage.getItem('connectIp');
+				var username=plus.storage.getItem('username');
+				if(username == null) {
+					return hui.toast("请您先登录！");
+				}
+				hui.postJSON(
+					connectIp + 'TimeAnalysisService/getMessage.php', {
+						username: username
+					},
+					function(data) {
+						//console.log(JSON.stringify(data));
+						var table = document.body.querySelector('.mui-table-view');
+						for(; beginItem < data.length; beginItem++) {
+							var div = document.createElement('div');
+							div.className = 'mui-card';
+							div.innerHTML = '<div class="mui-card-content"><div class="mui-card-content-inner">' +
+								'<p>您有一条消息：</p>'+
+								'<p style="color: #333;">用户 ' + data[beginItem][1] + ' 于 '+
+								data[beginItem][2]+ ' 参加了您发布的活动。</p>'+
+								'</div></div>';
+							//下拉刷新，新纪录插到最前面；
+							table.insertBefore(div, table.firstChild);
+						}
+					},
+					function(e) {
+						hui.toast("服务器链接失败");
+					}
+				);
+			}
+		</script>
+	</body>
+
+</html>
